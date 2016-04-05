@@ -11,7 +11,11 @@
 //------- ortc standart delegate ---------
 
 void onMessage(ortc_context *ortc, char *channel, char *message){
-    ortcClient->delegate->onMessage(ortcClient, new std::string(message), new std::string(channel));
+    std::string *msg = new std::string(message);
+    std::string *ch = new std::string(channel);
+    ortcClient->delegate->onMessage(ortcClient, msg, ch);
+    delete msg;
+    delete ch;
 }
 
 void onConnect(ortc_context* ortc){
@@ -23,15 +27,21 @@ void onDisconnect(ortc_context* ortc){
 }
 
 void onSubscribe(ortc_context* ortc, char* channel){
-    ortcClient->delegate->onSubscribe(ortcClient, new std::string(channel));
+    std::string *ch = new std::string(channel);
+    ortcClient->delegate->onSubscribe(ortcClient, ch);
+    delete ch;
 }
 
 void onUnsubscribe(ortc_context* ortc, char* channel){
-    ortcClient->delegate->onUnsubscribe(ortcClient, new std::string(channel));
+    std::string *ch = new std::string(channel);
+    ortcClient->delegate->onUnsubscribe(ortcClient, ch);
+    delete ch;
 }
 
 void onException(ortc_context* ortc, char* error){
-    ortcClient->delegate->onException(ortcClient, new std::string(error));
+    std::string *err = new std::string(error);
+    ortcClient->delegate->onException(ortcClient, err);
+    delete err;
 }
 
 void onReconnect(ortc_context* ortc){
@@ -49,7 +59,13 @@ void onReconnecting(ortc_context* ortc){
 
 void onEnable_presence(ortc_context *context, char* channel, char* error, char* result){
     if (ortcClient->presenceDelegate) {
-        ortcClient->presenceDelegate->onEnable_presence(ortcClient, new std::string(channel), new std::string(error), new std::string(result));
+        std::string* ch = new std::string(channel);
+        std::string* err = new std::string(error);
+        std::string* res = new std::string(result);
+        ortcClient->presenceDelegate->onEnable_presence(ortcClient, ch, err, res);
+        delete ch;
+        delete err;
+        delete res;
     }
 }
 
@@ -57,7 +73,13 @@ void onEnable_presence(ortc_context *context, char* channel, char* error, char* 
 
 void onDisable_presence(ortc_context *context, char* channel, char* error, char* result){
     if (ortcClient->presenceDelegate) {
+        std::string* ch = new std::string(channel);
+        std::string* err = new std::string(error);
+        std::string* res = new std::string(result);
         ortcClient->presenceDelegate->onDisable_presence(ortcClient, new std::string(channel), new std::string(error), new std::string(result));
+        delete ch;
+        delete err;
+        delete res;
     }
 }
 
@@ -65,12 +87,13 @@ void onDisable_presence(ortc_context *context, char* channel, char* error, char*
 
 void onPresence(ortc_context *context, char* channel, char* error, ortc_presenceData* result){
     if (ortcClient->presenceDelegate) {
+        std::string* ch = new std::string(channel);
+        std::string* err = new std::string(error);
         ortcClient->presenceDelegate->onPresence(ortcClient, new std::string(channel), new std::string(error), result);
+        delete ch;
+        delete err;
     }
 }
-
-
-
 
 
 
@@ -79,11 +102,13 @@ void onPresence(ortc_context *context, char* channel, char* error, ortc_presence
 
 void onSave_authentication(ortc_context *context, char* error, char* result){
     if (ortcClient->authenticationDelegate) {
+        std::string* err = new std::string(error);
+        std::string* res = new std::string(result);
         ortcClient->authenticationDelegate->onSave_authentication(ortcClient, new std::string(error), new std::string(result));
+        delete err;
+        delete res;
     }
 }
-
-
 
 
 OrtcClient::OrtcClient(OrtcClientDelegate* pDelegate){
@@ -101,7 +126,17 @@ OrtcClient::OrtcClient(OrtcClientDelegate* pDelegate){
 
 
 void OrtcClient::connect(std::string* appkey, std::string* token){
-    ortc_connect(context, (char*)appkey->c_str(), (char*)token->c_str());
+    const std::string::size_type size = appkey->size();
+    char *appkeybuffer = new char[size + 1];
+    memcpy(appkeybuffer, appkey->c_str(), size + 1);
+    
+    const std::string::size_type tokenbuffersize = token->size();
+    char *tokenbuffer = new char[tokenbuffersize + 1];
+    memcpy(tokenbuffer, token->c_str(), tokenbuffersize + 1);
+    
+    ortc_connect(context, (char*)appkeybuffer, (char*)tokenbuffer);
+    delete appkey;
+    delete token;
 }
 
 void OrtcClient::disconnect(){
@@ -110,18 +145,26 @@ void OrtcClient::disconnect(){
 
 void OrtcClient::subscribe(std::string* channel, int subscribeOnReconnected){
     ortc_subscribe(context, (char*)channel->c_str(), subscribeOnReconnected, onMessage);
+    delete channel;
 }
 
 void OrtcClient::unsubscribe(std::string* channel){
     ortc_unsubscribe(context, (char*)channel->c_str());
+    delete channel;
 }
 
 void OrtcClient::sendMessage(std::string* channel, std::string* message){
     ortc_send(context, (char *)channel->c_str(), (char *)message->c_str());
+    delete channel;
+    delete message;
 }
 
 void OrtcClient::setCluster(std::string* clusterUrl){
-    ortc_set_cluster(context, (char*)clusterUrl->c_str());
+    const std::string::size_type size = clusterUrl->size();
+    char *clusterUrlbuffer = new char[size + 1];
+    memcpy(clusterUrlbuffer, clusterUrl->c_str(), size + 1);
+    ortc_set_cluster(context, (char*)clusterUrlbuffer);
+    delete clusterUrl;
 }
 
 
@@ -130,7 +173,11 @@ std::string* OrtcClient::getCluster(){
 }
 
 void OrtcClient::setURL(std::string* url){
-    ortc_set_url(context, (char*)url->c_str());
+    const std::string::size_type size = url->size();
+    char *urlbuffer = new char[size + 1];
+    memcpy(urlbuffer, url->c_str(), size + 1);
+    ortc_set_url(context, (char*)urlbuffer);
+    delete url;
 }
 
 std::string* OrtcClient::getURL(){
@@ -138,7 +185,11 @@ std::string* OrtcClient::getURL(){
 }
 
 void OrtcClient::setConnectionMetadata(std::string* connection_metadata){
-    ortc_set_connection_metadata(context, (char*) connection_metadata->c_str());
+    const std::string::size_type size = connection_metadata->size();
+    char *connection_metadatabuffer = new char[size + 1];
+    memcpy(connection_metadatabuffer, connection_metadata->c_str(), size + 1);
+    ortc_set_connection_metadata(context, (char*) connection_metadatabuffer);
+    delete connection_metadata;
 }
 
 std::string* OrtcClient::get_connection_metadata(){
@@ -146,7 +197,11 @@ std::string* OrtcClient::get_connection_metadata(){
 }
 
 void OrtcClient::set_announcementSubChannel(std::string* announcementSubChannel){
-    ortc_set_announcementSubChannel(context, (char*)announcementSubChannel->c_str());
+    const std::string::size_type size = announcementSubChannel->size();
+    char *announcementSubChannelbuffer = new char[size + 1];
+    memcpy(announcementSubChannelbuffer, announcementSubChannel->c_str(), size + 1);
+    ortc_set_announcementSubChannel(context, (char*)announcementSubChannelbuffer);
+    delete announcementSubChannel;
 }
 
 std::string* OrtcClient::get_announcementSubChannel(){
@@ -162,62 +217,171 @@ int OrtcClient::is_connected(){
 }
 
 int OrtcClient::is_subscribed(std::string* channel){
-    return ortc_is_subscribed(context, (char*)channel->c_str());
+    const std::string::size_type size = channel->size();
+    char *channelbuffer = new char[size + 1];
+    memcpy(channelbuffer, channel->c_str(), size + 1);
+    return ortc_is_subscribed(context, (char*)channelbuffer);
+    delete channel;
 }
-
-
 
 void OrtcClient::enable_presence(std::string* privateKey,
                                  std::string* channel, int metadata){
-    ortc_enable_presence(context, (char*)privateKey->c_str(), (char*)channel->c_str(), metadata, onEnable_presence);
+    const std::string::size_type size = privateKey->size();
+    char *privateKeybuffer = new char[size + 1];
+    memcpy(privateKeybuffer, privateKey->c_str(), size + 1);
+    
+    const std::string::size_type size2 = channel->size();
+    char *channelbuffer = new char[size2 + 1];
+    memcpy(channelbuffer, channel->c_str(), size2 + 1);
+    
+    ortc_enable_presence(context, (char*)privateKeybuffer, (char*)channelbuffer, metadata, onEnable_presence);
+    delete privateKey;
+    delete channel;
 }
 
 void OrtcClient::enable_presence_ex(std::string* url, int isCluster,
-                        std::string* appKey, std::string* privateKey, std::string* channel, int metadata,
-                        void (*callback)(ortc_context*, char*, char*, char*)){
-    ortc_enable_presence_ex(context, (char*)url->c_str(), isCluster, (char*)appKey->c_str(), (char*)privateKey->c_str(), (char*)channel->c_str(), metadata, onEnable_presence);
-
+                                    std::string* appKey, std::string* privateKey, std::string* channel, int metadata,
+                                    void (*callback)(ortc_context*, char*, char*, char*)){
+    const std::string::size_type size = url->size();
+    char *urlbuffer = new char[size + 1];
+    memcpy(urlbuffer, url->c_str(), size + 1);
+    
+    const std::string::size_type size2 = appKey->size();
+    char *appKeybuffer = new char[size2 + 1];
+    memcpy(appKeybuffer, appKey->c_str(), size2 + 1);
+    
+    const std::string::size_type size3 = privateKey->size();
+    char *privateKeybuffer = new char[size3 + 1];
+    memcpy(privateKeybuffer, privateKey->c_str(), size3 + 1);
+    
+    const std::string::size_type size4 = channel->size();
+    char *channelbuffer = new char[size4 + 1];
+    memcpy(channelbuffer, channel->c_str(), size4 + 1);
+    
+    ortc_enable_presence_ex(context, (char*)urlbuffer, isCluster, (char*)appKeybuffer, (char*)privateKeybuffer, (char*)channelbuffer, metadata, onEnable_presence);
+    delete url;
+    delete privateKey;
+    delete appKey;
+    delete channel;
 }
 
 void OrtcClient::disable_presence(std::string* privateKey,
-                      std::string* channel, void (*callback)(ortc_context*, char*, char*, char*)){
-    ortc_disable_presence(context, (char*)privateKey->c_str(), (char*)channel->c_str(), onDisable_presence);
-
+                                  std::string* channel, void (*callback)(ortc_context*, char*, char*, char*)){
+    const std::string::size_type size3 = privateKey->size();
+    char *privateKeybuffer = new char[size3 + 1];
+    memcpy(privateKeybuffer, privateKey->c_str(), size3 + 1);
+    
+    const std::string::size_type size4 = channel->size();
+    char *channelbuffer = new char[size4 + 1];
+    memcpy(channelbuffer, channel->c_str(), size4 + 1);
+    ortc_disable_presence(context, (char*)privateKeybuffer, (char*)channelbuffer, onDisable_presence);
+    delete privateKey;
+    delete channel;
+    
 }
 
 void OrtcClient::disable_presence_ex(std::string* url, int isCluster,
-                         std::string* appKey, std::string* privateKey, std::string* channel,
-                         void (*callback)(ortc_context*, char*, char*, char*)){
-    ortc_disable_presence_ex(context, (char*)url->c_str(), isCluster, (char*)appKey->c_str(), (char*)privateKey->c_str(), (char*)channel->c_str(), onDisable_presence);
-
+                                     std::string* appKey, std::string* privateKey, std::string* channel,
+                                     void (*callback)(ortc_context*, char*, char*, char*)){
+    const std::string::size_type size = url->size();
+    char *urlbuffer = new char[size + 1];
+    memcpy(urlbuffer, url->c_str(), size + 1);
+    
+    const std::string::size_type size2 = appKey->size();
+    char *appKeybuffer = new char[size2 + 1];
+    memcpy(appKeybuffer, appKey->c_str(), size2 + 1);
+    
+    const std::string::size_type size3 = privateKey->size();
+    char *privateKeybuffer = new char[size3 + 1];
+    memcpy(privateKeybuffer, privateKey->c_str(), size3 + 1);
+    
+    const std::string::size_type size4 = channel->size();
+    char *channelbuffer = new char[size4 + 1];
+    memcpy(channelbuffer, channel->c_str(), size4 + 1);
+    ortc_disable_presence_ex(context, (char*)urlbuffer, isCluster, (char*)appKeybuffer, (char*)privateKeybuffer, (char*)channelbuffer, onDisable_presence);
+    delete url;
+    delete privateKey;
+    delete appKey;
+    delete channel;
 }
 
 void OrtcClient::presence(std::string* channel,
-              void (*callback)(ortc_context*, char*, char*, ortc_presenceData*)){
+                          void (*callback)(ortc_context*, char*, char*, ortc_presenceData*)){
+    const std::string::size_type size4 = channel->size();
+    char *channelbuffer = new char[size4 + 1];
+    memcpy(channelbuffer, channel->c_str(), size4 + 1);
     ortc_presence(context, (char*)channel, onPresence);
+    delete channel;
 }
 
 void OrtcClient::presence_ex(std::string* url,
-                 int isCluster, std::string* appKey, std::string* authToken, std::string* channel,
-                 void (*callback)(ortc_context*, char*, char*, ortc_presenceData*)){
-    ortc_presence_ex(context, (char*)url->c_str(), isCluster, (char*)appKey->c_str(), (char*)authToken->c_str(), (char*)channel->c_str(), onPresence);
+                             int isCluster, std::string* appKey, std::string* authToken, std::string* channel,
+                             void (*callback)(ortc_context*, char*, char*, ortc_presenceData*)){
+    const std::string::size_type size = url->size();
+    char *urlbuffer = new char[size + 1];
+    memcpy(urlbuffer, url->c_str(), size + 1);
+    
+    const std::string::size_type size2 = appKey->size();
+    char *appKeybuffer = new char[size2 + 1];
+    memcpy(appKeybuffer, appKey->c_str(), size2 + 1);
+    
+    const std::string::size_type size3 = authToken->size();
+    char *authTokenbuffer = new char[size3 + 1];
+    memcpy(authTokenbuffer, authToken->c_str(), size3 + 1);
+    
+    const std::string::size_type size4 = channel->size();
+    char *channelbuffer = new char[size4 + 1];
+    memcpy(channelbuffer, channel->c_str(), size4 + 1);
+    ortc_presence_ex(context, (char*)urlbuffer, isCluster, (char*)appKeybuffer, (char*)authTokenbuffer, (char*)channelbuffer, onPresence);
+    delete url;
+    delete authToken;
+    delete appKey;
+    delete channel;
 }
-
-
 
 
 
 void OrtcClient::save_authentication(
-                         std::string *authToken, int isPrivate, int ttl, std::string *privateKey,
-                         ortc_channelPermissions *permissions, int sizeOfChannelPermissions){
-    ortc_save_authentication(context, (char*)authToken, isPrivate, ttl, (char*)privateKey, permissions, sizeOfChannelPermissions, onSave_authentication);
+                                     std::string *authToken, int isPrivate, int ttl, std::string *privateKey,
+                                     ortc_channelPermissions *permissions, int sizeOfChannelPermissions){
+    const std::string::size_type size = privateKey->size();
+    char *privateKeybuffer = new char[size + 1];
+    memcpy(privateKeybuffer, privateKey->c_str(), size + 1);
+    
+    const std::string::size_type size3 = authToken->size();
+    char *authTokenbuffer = new char[size3 + 1];
+    memcpy(authTokenbuffer, authToken->c_str(), size3 + 1);
+    
+    ortc_save_authentication(context, (char*)authTokenbuffer, isPrivate, ttl, (char*)privateKeybuffer, permissions, sizeOfChannelPermissions, onSave_authentication);
+    delete authToken;
+    delete privateKey;
 }
 
 void OrtcClient::save_authentication_ex( std::string* url,
-                                 int isCluster, std::string* authToken, int isPrivate, std::string* appKey,
-                                 int ttl, std::string *privateKey, ortc_channelPermissions *permissions,
-                                 int sizeOfChannelPermissions){
-    ortc_save_authentication_ex(context, (char*)url->c_str(), isCluster, (char*)authToken->c_str(), isPrivate, (char*)appKey->c_str(), ttl, (char*)privateKey->c_str(), permissions, sizeOfChannelPermissions, onSave_authentication);
+                                        int isCluster, std::string* authToken, int isPrivate, std::string* appKey,
+                                        int ttl, std::string *privateKey, ortc_channelPermissions *permissions,
+                                        int sizeOfChannelPermissions){
+    const std::string::size_type size = url->size();
+    char *urlbuffer = new char[size + 1];
+    memcpy(urlbuffer, url->c_str(), size + 1);
+    
+    const std::string::size_type size2 = appKey->size();
+    char *appKeybuffer = new char[size2 + 1];
+    memcpy(appKeybuffer, appKey->c_str(), size2 + 1);
+    
+    const std::string::size_type size3 = privateKey->size();
+    char *privateKeybuffer = new char[size3 + 1];
+    memcpy(privateKeybuffer, privateKey->c_str(), size3 + 1);
+    
+    const std::string::size_type size4 = authToken->size();
+    char *authTokenbuffer = new char[size4 + 1];
+    memcpy(authTokenbuffer, authToken->c_str(), size4 + 1);
+    
+    ortc_save_authentication_ex(context, (char*)urlbuffer, isCluster, (char*)authTokenbuffer, isPrivate, (char*)appKeybuffer, ttl, (char*)privateKeybuffer, permissions, sizeOfChannelPermissions, onSave_authentication);
+    delete url;
+    delete authToken;
+    delete appKey;
+    delete privateKey;
 }
 
 
@@ -261,30 +425,6 @@ std::string* OrtcClient::getVersion(){
 std::string* OrtcClient::getVersionVerbose(){
     return new std::string(ortc_getVersionVerbose());
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
