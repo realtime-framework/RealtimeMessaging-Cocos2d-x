@@ -1,7 +1,6 @@
 #ifndef libortc_h__authentication
 #define libortc_h__authentication
 
-
 #include <curl/curl.h>
 #include <string.h>
 #include <stdlib.h>

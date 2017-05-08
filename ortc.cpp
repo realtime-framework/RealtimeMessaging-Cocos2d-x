@@ -133,7 +133,7 @@ void ortc_free_context(ortc_context* context){
   _ortc_dlist_free(context->ortcCommands);
 
   if(context->lws_context != NULL)
-    libwebsocket_context_destroy(context->lws_context);
+    lws_context_destroy(context->lws_context);
   context->lws_context = NULL;
   curl_global_cleanup(); 
   free(context);

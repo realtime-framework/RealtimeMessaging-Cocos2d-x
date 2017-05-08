@@ -142,7 +142,7 @@ void _ortc_parse_message(ortc_context *context, char *message){
     }
 
   } else if(message[0] == 'o' && strlen(message)==1){
-    wsSock = libwebsocket_get_socket_fd(context->wsi);
+    wsSock = lws_get_socket_fd(context->wsi);
     opt = ORTC_SNDBUF_SIZE;
     setsockopt(wsSock, SOL_SOCKET, SO_SNDBUF, (const char*)&opt, sizeof(opt));
 	

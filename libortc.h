@@ -146,8 +146,8 @@ typedef struct ortc_context {
   char* cluster;
   char* url;
   char* server;
-  struct libwebsocket_context *lws_context;
-  struct libwebsocket *wsi;
+  struct lws_context *lws_context;
+  struct lws *wsi;
   char* host;
   int port;
   int useSSL;

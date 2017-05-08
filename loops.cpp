@@ -249,11 +249,11 @@ void *_ortc_loop_communication(void *ptr){
 	context = (ortc_context *) ptr;
 	while(context->loop_active_communication){
 		if(context->lws_context)
-			libwebsocket_service(context->lws_context, 10);
+			lws_service(context->lws_context, 10);
 		if(c == 50){
 			c = 0;
 			if(context->lws_context && context->wsi)
-				libwebsocket_callback_on_writable(context->lws_context, context->wsi);
+				lws_callback_on_writable(context->wsi);
 		}
 		c++;
 	}
@@ -366,7 +366,7 @@ void *_ortc_loop_reconnect(void *ptr){
 	_ortc_finish_loops(context);
 	context->loop_active_reconnecting = 1;
 	if(context->lws_context)
-		libwebsocket_context_destroy(context->lws_context);
+		lws_context_destroy(context->lws_context);
 	context->lws_context = NULL;
 	context->wsi = NULL;
 	
@@ -475,7 +475,7 @@ void *_ortc_disconnecting_worker(void *ptr){
 	_ortc_finish_loops(context);
 	
 	if(context->lws_context)
-		libwebsocket_context_destroy(context->lws_context);
+		lws_context_destroy(context->lws_context);
 	context->lws_context = NULL;
 	context->wsi = NULL;
 
@@ -537,9 +537,9 @@ int _ortc_open_socket(ortc_context* context){
 		context->useSSL = 1;
 	}
 
-	libwebsocket_cancel_service(context->lws_context);
+	lws_cancel_service(context->lws_context);
 
-	context->wsi = libwebsocket_client_connect_extended(context->lws_context, context->host, context->port, context->useSSL, path, "", "", "ortc-protocol", -1, context);
+	context->wsi = lws_client_connect_extended(context->lws_context, context->host, context->port, context->useSSL, path, "", "", "ortc-protocol", -1, context);
 	free(path);
 	if(context->wsi == NULL){
 		_ortc_exception(context,  (char*)"Creating websocket failed!");
