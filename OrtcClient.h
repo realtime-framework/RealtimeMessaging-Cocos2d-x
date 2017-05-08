@@ -10,13 +10,16 @@
 #define OrtcClient_hpp
 
 #include <stdio.h>
+#include <string>
 #include "libortc.h"
 
+using namespace std;
 
 class OrtcClientDelegate;
 class OrtcClientPresenceDelegate;
 class OrtcClientAuthenticationDelegate;
 
+using namespace std;
 class OrtcClient{
 public:
     OrtcClientDelegate* delegate;

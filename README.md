@@ -7,6 +7,45 @@ If your app has data that needs to be updated in the user’s interface as it ch
 Checkout the ready-to-use example at [https://github.com/realtime-framework/RealtimeMessaging-Cocos2d-x-example](https://github.com/realtime-framework/RealtimeMessaging-Cocos2d-x-example)
 
 ---
+## Cocos2d-x instalation
+
+*	Download Cocos2dx from [cocos2d-x page](http://www.cocos2d-x.org/download).
+*	Place the sdk in your system files, in the folder run `./setup.py` on terminal.
+*	Create a new cocos2dx project by running the command `cocos new -l cpp -p [YOUR_PACKAGE_NAME] -d [PATH_TO_NEW_PROJECT]`.
+
+
+## Setup the example
+
+*	Copy the content of the example Classes folder to Classes folder in your project.
+*	Copy the content of the example Resources folder to Resources folder in your project.
+
+## Install cocos Realtime Messaging SDK
+
+*	Copy cocosRealtimeMessaging SDK to cocos2d/extenssions.
+*	Edit Android.mk file in cocos2d/extenssions and add the following lins under `LOCAL_SRC_FILES := \`:
+
+		cocosRealtimeMessaging/OrtcClient.cpp \
+		cocosRealtimeMessaging/common.cpp \
+		cocosRealtimeMessaging/loops.cpp \
+		cocosRealtimeMessaging/authentication.cpp \
+		cocosRealtimeMessaging/connection.cpp \
+		cocosRealtimeMessaging/message.cpp \
+		cocosRealtimeMessaging/balancer.cpp \
+		cocosRealtimeMessaging/dlist.cpp \
+		cocosRealtimeMessaging/ortc.cpp \
+		cocosRealtimeMessaging/channel.cpp \
+		cocosRealtimeMessaging/events.cpp \
+		cocosRealtimeMessaging/presence.cpp \
+		cocosRealtimeMessaging/slre/slre.cpp \
+			
+*	add `LOCAL_STATIC_LIBRARIES += cocos_curl_static` to local static libraries entries in `Android.mk` if using cocos2dx version >= 3.13
+*	In the last line add `$(call import-module,curl/prebuilt/android)`
+*	If building for iOS, make sure in the XCode project the cocos2d_libs is using libcurl.a in link with binary libraries.
+
+
+That's it, run the project.
+
+---
 
 ## Interface OrtcClientDelegate
 Handles ortc events:

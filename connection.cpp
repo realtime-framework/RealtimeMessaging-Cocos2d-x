@@ -23,9 +23,9 @@
 
 #define MAX_ORTC_PAYLOAD 1800
 
-static int ortc_callback(struct libwebsocket_context *lws_context,
-			 struct libwebsocket *wsi,
-			 enum libwebsocket_callback_reasons reason,
+static int ortc_callback(
+			 struct lws *wsi,
+			 enum lws_callback_reasons reason,
 			 void *user, 
  			 void *in, 
 			 size_t len)
@@ -45,7 +45,7 @@ static int ortc_callback(struct libwebsocket_context *lws_context,
       if(t!=NULL){
 		messageToSend = t->id;
 		sprintf((char *)&buf[LWS_SEND_BUFFER_PRE_PADDING], "%s", messageToSend);
-		libwebsocket_write(context->wsi, &buf[LWS_SEND_BUFFER_PRE_PADDING], strlen(messageToSend), LWS_WRITE_TEXT);
+		lws_write(context->wsi, &buf[LWS_SEND_BUFFER_PRE_PADDING], strlen(messageToSend), LWS_WRITE_TEXT);
 		_ortc_dlist_free_dnode(t);
 		context->throttleCounter++;
       }
@@ -56,14 +56,14 @@ static int ortc_callback(struct libwebsocket_context *lws_context,
       if(t!=NULL){
 		messageToSend = t->id;
 		sprintf((char *)&buf[LWS_SEND_BUFFER_PRE_PADDING], "%s", messageToSend);
-		libwebsocket_write(context->wsi, &buf[LWS_SEND_BUFFER_PRE_PADDING], strlen(messageToSend), LWS_WRITE_TEXT);
+		lws_write(context->wsi, &buf[LWS_SEND_BUFFER_PRE_PADDING], strlen(messageToSend), LWS_WRITE_TEXT);
 		_ortc_dlist_free_dnode(t);
 		context->throttleCounter++;
       } 
 	  pthread_mutex_unlock(&context->mutex_msg);
     }
     if( (context->messagesToSend->count>0 && context->throttleCounter<2000) || context->ortcCommands->count>0) {	
-      libwebsocket_callback_on_writable(context->lws_context, context->wsi);	
+      lws_callback_on_writable(context->wsi);
     }
     break;
   }
@@ -85,7 +85,7 @@ static int ortc_callback(struct libwebsocket_context *lws_context,
   return 0;
 }
 
-static struct libwebsocket_protocols ortc_protocols[] = {
+static struct lws_protocols ortc_protocols[] = {
   {"ortc-protocol", ortc_callback, 0, 4096},
   { NULL, NULL, 0, 0}
 };
@@ -96,7 +96,7 @@ int _ortc_prepare_websocket(ortc_context* context){
   struct lws_context_creation_info info;
 
   if(context->lws_context)
-    libwebsocket_context_destroy(context->lws_context);
+    lws_context_destroy(context->lws_context);
   context->lws_context = NULL;
   if(context->host)
     free(context->host);
@@ -116,7 +116,7 @@ int _ortc_prepare_websocket(ortc_context* context){
   info.ka_interval = 0;
   info.ka_probes = 0;
   
-  context->lws_context = libwebsocket_create_context(&info);
+  context->lws_context = lws_create_context(&info);
   if (context->lws_context == NULL) {
     _ortc_exception(context,  (char*)"Creating libwebsocket context failed!");
     return -1;
@@ -129,7 +129,7 @@ void _ortc_send_command(ortc_context *context, char *message){
   _ortc_dlist_insert(context->ortcCommands, message, NULL, NULL, 0, NULL);
   pthread_mutex_unlock(&context->mutex_cmd);
   free(message);
-  libwebsocket_callback_on_writable(context->lws_context, context->wsi);
+  lws_callback_on_writable(context->wsi);
 }
 
 void _ortc_send_message(ortc_context *context, char *message){
@@ -137,7 +137,7 @@ void _ortc_send_message(ortc_context *context, char *message){
   _ortc_dlist_insert(context->messagesToSend, message, NULL, NULL, 0, NULL);
   pthread_mutex_unlock(&context->mutex_msg);
   free(message);
-  libwebsocket_callback_on_writable(context->lws_context, context->wsi);
+  lws_callback_on_writable(context->wsi);
 }
 
 void _ortc_send(ortc_context* context, char* channel, char* message){
